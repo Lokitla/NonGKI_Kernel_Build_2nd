@@ -36,8 +36,8 @@ env:
   # KernelSU
   KERNELSU_SOURCE: ""
   KERNELSU_BRANCH: ""
-  KERNELSU_AUTO_GET: "true" # if u want easy setting kernelsu, u can true.
-  KERNELSU_AUTO_FORK: "resukisu" # xxksu, rsuntk, next, resukisu and sukisu
+  KERNELSU_AUTO_GET: "true"
+  KERNELSU_AUTO_FORK: "resukisu"
 
   # SUSFS — fixed patch for cmdline.c rejection (LawRun uses proc_command_line)
   SUSFS_ENABLE: true
@@ -55,50 +55,47 @@ env:
   ROM_TEXT: "lawrun_a10_4.4"
 
   # Other env
-  PYTHON_VERSION: "3" # Only 2(Ubuntu 22.04 and Ubuntu 20.04) or 3(Any OS Versions).
+  PYTHON_VERSION: "3"
+  PACK_METHOD: "AnyKernel3"
+  PACK_KMODULES: "false"
+  KERNELSU_METHOD: "shell"
 
-  PACK_METHOD: "AnyKernel3" # AnyKernel3 need SOURCE and BRANCH, MKBOOTIMG needn't it.
-  PACK_KMODULES: "false" # if u want pack kernel modules (.ko) into AnyKernel3.
+  # Patches — using this repo itself as patch source
+  PATCHES_SOURCE: "Lokitla/NonGKI_Kernel_Build_2nd"
+  PATCHES_BRANCH: "mainline"
+  SUSFS_FOLDER_FIXED: "Patches/Fixed/wayne_4.4"
+  SUSFS_PATCH_FIXED: "cmdline_spoof_fix"
 
-  KERNELSU_METHOD: "shell" # shell, manual and only.
+  REKERNEL_ENABLE: "false"
+  DROIDSPACES_ENABLE: "false"
+  NOMOUNT_ENABLE: "false"
 
-  # Patches — using this repo itself as patch source (NonGKI_Kernel_Patches repo token-restricted)
-  PATCHES_SOURCE: "Lokitla/NonGKI_Kernel_Build_2nd" # [your_name]/[your_repo]
-  PATCHES_BRANCH: "mainline" # [your_branch]
+  HOOK_METHOD: "syscall"
 
-  SUSFS_FOLDER_FIXED: "Patches/Fixed/wayne_4.4" # patch directory in PATCHES_SOURCE repo
-  SUSFS_PATCH_FIXED: "cmdline_spoof_fix" # patch filename without .patch extension
+  KPM_ENABLE: "false"
+  KPM_INLINE: "false"
+  KPM_KPATCH_NEXT: "false"
+  KPM_PATCH_SOURCE: "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU_patch/refs/heads/main/kpm/patch_linux"
 
-  REKERNEL_ENABLE: "false" # ReKernel requires Cgroup V2 (kernel/cgroup/cgroup.c), not available on 4.4 kernel.
-  DROIDSPACES_ENABLE: "false" # if u need Droidspaces or LXC/Docker.
-  NOMOUNT_ENABLE: "false" # if u need NoMount.
+  BASEBAND_GUARD_ENABLE: "true"
+  BASEBAND_GUARD_BOOT: "false"
 
-  HOOK_METHOD: "syscall" # Manual hook method ->  syscall.
+  GENERATE_DTB: "false"
+  GENERATE_CHIP: "qcom"
 
-  KPM_ENABLE: "false" # Anyone devices.
-  KPM_INLINE: "false" # Only use it for SukiSU-Ultra.
-  KPM_KPATCH_NEXT: "false" # If u want hook KPatch-Next in build step.
-  KPM_PATCH_SOURCE: "https://raw.githubusercontent.com/SukiSU-Ultra/SukiSU_patch/refs/heads/main/kpm/patch_linux" # If u want to use KPM Inline,so you need set patch exec file source -> raw.githubusercontent.com/Test/Test/patch .
+  BUILD_DEBUGGER: "false"
+  SKIP_PATCH: "true"
 
-  BASEBAND_GUARD_ENABLE: "true" #if u want prevent unauthorized writes to critical partitions/device nodes.
-  BASEBAND_GUARD_BOOT: "false" #if u want protect boot partition.
-
-  GENERATE_DTB: "false" # if u kernel need DTB , but cannot auto generate it. (Only AnyKernel3).
-  GENERATE_CHIP: "qcom" # only supported for qcom and mediatek.
-
-  BUILD_DEBUGGER: "false" # Disabled: SELinux pre-build fails without auto-generated headers; main make handles order correctly.
-  SKIP_PATCH: "true" # Ignore errors found in Patch Debugger.
-
-  BUILD_OTHER_CONFIG: "false" # Merge config files.
+  BUILD_OTHER_CONFIG: "false"
   MERGE_CONFIG_FILES: ""
 
-  FREE_MORE_SPACE: "true" # if u want get more space, enabled it.
+  FREE_MORE_SPACE: "true"
 
 jobs:
   build-kernel:
     name: Xiaomi Mi 6X (LawRun Based A10) (Kernel 4.4)
-    runs-on: ubuntu-24.04 # u can changed to ubuntu 22.04, and need container set ubuntu-24.04
-    container: ubuntu:focal # if u need use arch linux -> archlinux/archlinux:latest or ubuntu 20.04 -> ubuntu:focal
+    runs-on: ubuntu-24.04
+    container: ubuntu:focal
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
@@ -131,6 +128,13 @@ jobs:
 
       - name: 🛡️ Patch Kernel of NoMount
         uses: ./.github/workflows/patch-nomount
+
+      - name: 🔧 Fix BBG Selinux Makefile
+        if: env.BASEBAND_GUARD_ENABLE == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/device_kernel
+          # Fix: # in sepatch.txt is treated as Make comment, causing "invalid syntax in conditional"
+          sed -i 's/#define DEFINE_LSM/\\#define DEFINE_LSM/' security/selinux/Makefile
 
       - name: 🚀 Build Process
         uses: ./.github/workflows/build-process
