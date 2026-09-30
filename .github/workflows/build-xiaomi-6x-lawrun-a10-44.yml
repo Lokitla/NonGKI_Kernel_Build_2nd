@@ -39,9 +39,9 @@ env:
   KERNELSU_AUTO_GET: "true"
   KERNELSU_AUTO_FORK: "resukisu"
 
-  # SUSFS — fixed patch for cmdline.c rejection (LawRun uses proc_command_line)
+  # SUSFS — inline fix for cmdline.c rejection (LawRun uses proc_command_line)
   SUSFS_ENABLE: true
-  SUSFS_FIXED: true
+  SUSFS_FIXED: false
 
   # AnyKernel3
   AK3_SOURCE: "https://github.com/osm0sis/AnyKernel3.git"
@@ -59,12 +59,6 @@ env:
   PACK_METHOD: "AnyKernel3"
   PACK_KMODULES: "false"
   KERNELSU_METHOD: "shell"
-
-  # Patches — using this repo itself as patch source
-  PATCHES_SOURCE: "Lokitla/NonGKI_Kernel_Build_2nd"
-  PATCHES_BRANCH: "mainline"
-  SUSFS_FOLDER_FIXED: "Patches/Fixed/wayne_4.4"
-  SUSFS_PATCH_FIXED: "cmdline_spoof_fix"
 
   REKERNEL_ENABLE: "false"
   DROIDSPACES_ENABLE: "false"
@@ -113,6 +107,51 @@ jobs:
 
       - name: 🪝 Patch Kernel of SUSFS
         uses: ./.github/workflows/patch-susfs
+
+      - name: 🔧 Fix SUSFS cmdline.c (LawRun proc_command_line)
+        if: env.SUSFS_ENABLE == 'true'
+        run: |
+          cd $GITHUB_WORKSPACE/device_kernel
+          # LawRun kernel uses proc_command_line instead of saved_command_line,
+          # causing the SUSFS patch to reject on fs/proc/cmdline.c.
+          # This step adds the SUSFS spoof code inline — no external patch file needed.
+          if grep -q "susfs_spoof_cmdline_or_bootconfig" fs/proc/cmdline.c; then
+            echo "[+] cmdline.c already has SUSFS spoof code, skipping"
+          else
+            echo "[+] Adding SUSFS spoof code to fs/proc/cmdline.c"
+            cat > /tmp/cmdline_spoof_fix.patch << 'PATCH'
+--- a/fs/proc/cmdline.c
++++ b/fs/proc/cmdline.c
+@@ -4,6 +4,12 @@
+ #include <linux/seq_file.h>
+ #include <asm/setup.h>
+ 
++#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
++extern struct static_key_false susfs_is_fake_cmdline_or_bootconfig_buffer_set;
++extern void susfs_spoof_cmdline_or_bootconfig(struct seq_file *m);
++#endif
++
+ #if defined(CONFIG_INITRAMFS_IGNORE_SKIP_FLAG) || \
+     defined(CONFIG_PROC_CMDLINE_APPEND_ANDROID_FORCE_NORMAL_BOOT)
+ #define INITRAMFS_STR_FIND "skip_initramf"
+@@ -48,6 +54,13 @@
+ 
+ static int cmdline_proc_show(struct seq_file *m, void *v)
+ {
++#ifdef CONFIG_KSU_SUSFS_SPOOF_CMDLINE_OR_BOOTCONFIG
++	if (static_branch_likely(&susfs_is_fake_cmdline_or_bootconfig_buffer_set)) {
++		susfs_spoof_cmdline_or_bootconfig(m);
++		seq_putc(m, '\\n');
++		return 0;
++	}
++#endif
+ 	seq_printf(m, "%s\n", proc_command_line);
+ 	return 0;
+ }
+PATCH
+            patch -p1 < /tmp/cmdline_spoof_fix.patch
+            echo "[+] SUSFS spoof code added to cmdline.c"
+          fi
 
       - name: 🔗 Patch for no-kprobe
         uses: ./.github/workflows/patch-no-kprobe
