@@ -14,7 +14,7 @@
 | Xiaomi Mi MIX 2S | All | polaris | [4.9/Evolution-X-Devices/sdm845](https://github.com/Evolution-X-Devices/kernel_xiaomi_sdm845) | Evolution X 10.X | 15 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ✅ | ✅ | ❌ | Stable |   
 | Xiaomi Mi MIX 2S | All | polaris | [4.19/duckyduckG/sdm845_419](https://github.com/duckyduckG/android_kernel_xiaomi_sdm845_419) | AOSP Based | 16 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ❌ | ❌ | ❌ | Stable |  
 | Xiaomi Mi Pad 4 | All | clover | [4.19/pix106/southwest](https://github.com/pix106/android_kernel_xiaomi_southwest-4.19) | LineageOS 22 | 15 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ❌ | ❌ | ❌ | Stable |  
-| Xiaomi Mi 6X | All | wayne | [4.4/LawRun/sdm660](https://github.com/negrroo/LawRun_xiaomi_sdm660_All) | LawRun | 10 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ❌ | ❌ | ❌ | Testing |  
+| Xiaomi Mi 6X | All | wayne | [4.4/LawRun/sdm660](https://github.com/negrroo/LawRun_xiaomi_sdm660_All) | LawRun | 10 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ❌ | ❌ | ❌ | Stable |  
 | Xiaomi Redmi 8 | All | olive | [4.19/blazey66/sdm439-4.19](https://github.com/blazey66/android_kernel_xiaomi_sdm439-4.19) | AOSP Based | 15 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ✅ | ✅ | ❌ | Stable |  
 | Xiaomi Redmi K20 Pro | All | raphael | [4.14/SOVIET-ANDROID/SOVIET-STAR-OSS](https://github.com/SOVIET-ANDROID/kernel_xiaomi_raphael) | AOSP Based | 15 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ❌ | ❌ | ❌ | Stable |  
 | Xiaomi Redmi K30 Ultra | All | cezanne | [4.14/HuaLiMao-AQ/AOSP](https://github.com/HuaLiMao-AQ/android_kernel_xiaomi_mt6873) | AOSP Based | 14 | AnyKernel3 | ReSukiSU | ✅ | Inline | ❌ | ✅ | ✅ | ❌ | Stable |  
@@ -27,7 +27,7 @@
 - Samsung Galaxy Note10+ is compatible with the Exynos 9825 processor for the EU region. Do not flash this kernel into Qualcomm-based devices.
 - Xiaomi Mi MIX 2S Evolution X 10 has been backported to Cgroup V2 (UID and Freezer), Cgroup Workingset, Binder (5.15-android13), LZ4 (Updated to 1.10.0, LZ4K, LZ4K_OPLUS, LZ4KD), Zstd (Updated to 1.5.7), Schedutil (Optimize default, Blu, Pixel, SchedHorizon, Walt), UVC (Host and Gadget), Block IO Controller, String Memory Optimize, Srandom, NTFS3, SBalance IRQ balancer.
 - Xiaomi Redmi 8 is also available for 7A, 8A and 8A Dual.
-- Xiaomi Mi 6X (wayne) is based on the LawRun SDM660 kernel (4.4.302). First build may require SUSFS patch fixes for kernel 4.4 conflicts. ReKernel and Baseband Guard are disabled (incompatible with 4.4 kernel: ReKernel needs Cgroup V2, BBG sepatch.txt breaks selinux Makefile). Build status: Testing.
+- Xiaomi Mi 6X (wayne) is based on the LawRun SDM660 kernel (4.4.302). SUSFS patch fix applied for cmdline.c (LawRun uses proc_command_line instead of saved_command_line). ReKernel and Baseband Guard are disabled (incompatible with 4.4 kernel: ReKernel needs Cgroup V2, BBG sepatch.txt breaks selinux Makefile and objsec.h). Build status: Stable.
 
 **Chinese**:  
 - Google Pixel 3a AnyKernel3 编译目标同时支持 Pixel 3a 和 Pixel 3a XL。
@@ -35,4 +35,4 @@
 - 三星 Note 10+ 适配处理器为猎户座 9825，为欧盟地区版本，高通版本请勿将该内核刷入进设备中
 - 小米 MIX 2S Evolution X 10 已移植 Cgroup V2 (UID 和 Freezer)、Cgroup Workingset、Binder (5.15-android13)、LZ4（更新至 1.10.0、LZ4K、LZ4K_OPLUS、LZ4KD）、Zstd（更新至 1.5.7）、调度（优化原生、Blu、Pixel、SchedHorizon、Walt）、UVC (Host 和 Gadget)、Block IO 控制器、String 内存优化、Srandom 随机数、NTFS3 驱动、SBalance IRQ 平衡器
 - 红米 8 同样适用于 7A、8A 以及 8A Dual
-- 小米 6X (wayne) 基于 LawRun SDM660 内核 (4.4.302)。首次编译可能需要针对 4.4 内核的 SUSFS 补丁修复。ReKernel 和 Baseband Guard 已禁用（与 4.4 内核不兼容：ReKernel 需要 Cgroup V2，BBG sepatch.txt 破坏 selinux Makefile）。编译状态：测试中。
+- 小米 6X (wayne) 基于 LawRun SDM660 内核 (4.4.302)。已应用 SUSFS 补丁修复 cmdline.c（LawRun 使用 proc_command_line 而非 saved_command_line）。ReKernel 和 Baseband Guard 已禁用（与 4.4 内核不兼容：ReKernel 需要 Cgroup V2，BBG sepatch.txt 破坏 selinux Makefile 和 objsec.h）。编译状态：稳定。
